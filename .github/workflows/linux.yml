@@ -107,6 +107,7 @@ jobs:
           -u $(id -u) \
           -v $PWD:/usr/src/tdesktop \
           -e CONFIG=Debug \
+          -e QT=6.8.2 \
           tdesktop:centos_env \
           /usr/src/tdesktop/Telegram/build/docker/centos_env/build.sh \
           -D CMAKE_C_FLAGS_DEBUG="" \
