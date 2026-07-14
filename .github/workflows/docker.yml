@@ -16,14 +16,22 @@ jobs:
     name: Ubuntu
     runs-on: ubuntu-latest
 
-    env:
-      IMAGE_TAG: ghcr.io/${{ github.repository }}/centos_env:${{ hashFiles('Telegram/build/docker/centos_env/Dockerfile', 'Telegram/build/docker/centos_env/gen_dockerfile.py', 'Telegram/build/docker/centos_env/pyproject.toml') }}
-
     steps:
       - name: Clone.
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Set image tag.
+        run: |
+          HASH=$(
+            sha256sum \
+              Telegram/build/docker/centos_env/Dockerfile \
+              Telegram/build/docker/centos_env/gen_dockerfile.py \
+              Telegram/build/docker/centos_env/pyproject.toml \
+            | sha256sum | cut -c1-12
+          )
+          echo "IMAGE_TAG=ghcr.io/${{ github.repository }}/centos_env:$HASH" >> "$GITHUB_ENV"
 
       - name: First set up.
         run: |
