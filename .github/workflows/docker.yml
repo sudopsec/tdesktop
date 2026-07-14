@@ -41,5 +41,5 @@ jobs:
           DEBUG= LTO= poetry run gen_dockerfile | DOCKER_BUILDKIT=1 docker build -t $IMAGE_TAG -
 
       - name: Push the Docker image.
-        if: ${{ github.ref_name == github.event.repository.default_branch }}
+        if: ${{ github.ref_name == github.event.repository.default_branch || github.event_name == 'workflow_dispatch' }}
         run: docker push $IMAGE_TAG

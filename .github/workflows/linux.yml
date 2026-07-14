@@ -67,8 +67,28 @@ jobs:
       - name: First set up.
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-          docker pull ghcr.io/$GITHUB_REPOSITORY/centos_env
-          docker tag ghcr.io/$GITHUB_REPOSITORY/centos_env tdesktop:centos_env
+
+          IMAGE_READY=0
+          for IMAGE in \
+            "ghcr.io/$GITHUB_REPOSITORY/centos_env:latest" \
+            "ghcr.io/telegramdesktop/tdesktop/centos_env:latest"; do
+            if docker pull "$IMAGE"; then
+              docker tag "$IMAGE" tdesktop:centos_env
+              IMAGE_READY=1
+              echo "Using Docker image: $IMAGE"
+              break
+            fi
+            echo "Image not found: $IMAGE"
+          done
+
+          if [ "$IMAGE_READY" -eq 0 ]; then
+            echo "No prebuilt image found, building centos_env locally..."
+            sudo apt update
+            curl -sSL https://install.python-poetry.org | python3 -
+            cd $REPO_NAME/Telegram/build/docker/centos_env
+            poetry install
+            DEBUG= LTO= poetry run gen_dockerfile | DOCKER_BUILDKIT=1 docker build -t tdesktop:centos_env -
+          fi
 
       - name: Telegram Desktop build.
         run: |
